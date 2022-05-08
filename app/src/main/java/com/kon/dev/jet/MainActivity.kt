@@ -2,26 +2,18 @@ package com.kon.dev.jet
 
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.rounded.ArrowDropDown
+import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kon.dev.jet.ui.theme.JetTheme
@@ -30,178 +22,200 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            JetTheme() {
-                Conversation(messages = SampleData.conversationSample)
+            JetTheme {
+                MyApp()
             }
         }
     }
-}
 
-data class Message(val author: String, val body: String)
 
-@Composable
-fun MessageCard(msg: com.kon.dev.jet.Message) {
+    @Composable
+    fun MyApp() {
+        Column {
+            val topAppBar = CenterAlignedTopAppBar(
+                title = {
+                    Text(text = "テストアプリ")
+                },
+                navigationIcon = {
+                    IconButton(onClick = {}) {
+                        Icon(
+                            imageVector = Icons.Rounded.Menu,
+                            contentDescription = "menu"
+                        )
+                    }
+                }
+            )
 
-    var isExpanded by remember {
-        mutableStateOf(false)
+            topAppBar
+            TaskGrid(SampleData.TASK_SAMPLE_DATA)
+        }
     }
 
-    Row(
-        modifier = Modifier
-            .padding(8.dp)
-    ) {
-        Image(
-            painter = painterResource(id = R.drawable.test),
-            contentDescription = "test",
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .border(
-                    width = 1.5.dp,
-                    color = MaterialTheme.colorScheme.primary,
-                    shape = CircleShape
-                )
-        )
-        
-        Spacer(modifier = Modifier.width(8.dp))
+    @Composable
+    fun TaskGrid(tasks: List<Task>) {
+        LazyColumn {
+            var taskRow: MutableList<Task> = mutableListOf()
 
-        Column {
-            Text(
-                text = msg.author,
-                color = MaterialTheme.colorScheme.primary,
-                style = MaterialTheme.typography.labelMedium
-            )
+            items(tasks.size) { index ->
+                taskRow.add(tasks[index])
+                if (taskRow.size == 2) {
+                    TaskRow(task1 = taskRow[0], task2 = taskRow[1])
+                    taskRow.clear()
+                }
+                else if (index + 1 == tasks.size) {
+                    TaskRow(task1 = tasks[index])
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            val surfaceColor by animateColorAsState(
-                if (isExpanded) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.background
-            )
-
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                shadowElevation = 1.dp,
-                color = surfaceColor,
-                modifier = Modifier
-                    .animateContentSize()
-                    .padding(1.dp)
-            ) {
-                Row() {
-                    Text(
-                        text = msg.body,
-                        modifier = Modifier
-                            .padding(all = 8.dp)
-                            .weight(weight = 1f, fill = true)
-                            .fillMaxWidth(),
-                        maxLines = if (isExpanded) Int.MAX_VALUE else 1,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    IconButton(
-                        onClick = { isExpanded = !isExpanded },
-//                        modifier = Modifier.weight(weight = 1f, fill = false)
-                    ) {
-                        if (isExpanded) Icon(imageVector = Icons.Filled.KeyboardArrowUp, contentDescription = "")
-                        else Icon(imageVector = Icons.Filled.KeyboardArrowDown, contentDescription = "")
-                    }
                 }
             }
         }
     }
-}
 
-@Composable
-fun Conversation(messages: List<Message>) {
-    LazyColumn {
-        items(messages) { msg ->
-            MessageCard(msg = msg)
+    @OptIn(ExperimentalMaterial3Api::class)
+    @Composable
+    fun TaskRow(task1: Task, task2: Task? = null) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight()
+                .padding(2.dp)
+        ) {
+//        TaskItem(task = task1)
+            Surface(
+                modifier = Modifier
+                    .padding(8.dp)
+                    .shadow(elevation = 4.dp, MaterialTheme.shapes.medium)
+                    .weight(1f, true),
+                onClick = {
+                    Toast.makeText(this@MainActivity, "id: ${task1.id}", Toast.LENGTH_SHORT).show()
+                }
+            ) {
+                Column(
+                    modifier = Modifier.padding(8.dp)
+                ) {
+                    Text(
+                        text = "${task1.title}: id ${task1.id}",
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "${task1.rate}%",
+                        style = MaterialTheme.typography.headlineSmall
+                    )
+                }
+            }
+            if (task2 != null) {
+//            TaskItem(task = task2)
+                Surface(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .shadow(elevation = 4.dp, MaterialTheme.shapes.medium)
+                        .weight(1f, true),
+                    onClick = {
+                        Toast.makeText(this@MainActivity, "id: ${task2.id}", Toast.LENGTH_SHORT).show()
+                    }
+                ) {
+                    Column(
+                        modifier = Modifier.padding(8.dp)
+                    ) {
+                        Text(
+                            text = "${task2.title}: id ${task2.id}",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = "${task2.rate}%",
+                            style = MaterialTheme.typography.headlineSmall
+                        )
+                    }
+                }
+            }
+            else {
+                Spacer(
+                    modifier = Modifier
+                        .padding(8.dp)
+                        .weight(1f, true)
+                )
+            }
         }
     }
-}
 
-@Preview(
-    showBackground = true,
-    name = "Light Mode"
-)
-@Preview(
-    uiMode = Configuration.UI_MODE_NIGHT_YES,
-    showBackground = true,
-    name = "Dark Mode"
-)
-@Composable
-fun DefaultPreview() {
-    JetTheme() {
-        Conversation(messages = SampleData.conversationSample)
+    @Composable
+    fun TaskItem(task: Task) {
+        Surface(
+            modifier = Modifier
+                .padding(8.dp)
+                .shadow(elevation = 4.dp, MaterialTheme.shapes.medium)
+        ) {
+            Column(
+                modifier = Modifier.padding(8.dp)
+            ) {
+                Text(
+                    text = task.title,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                Text(
+                    text = "${task.rate}%",
+                    style = MaterialTheme.typography.headlineSmall
+                )
+            }
+        }
+    }
+
+    @Preview(
+        showBackground = true,
+        name = "Light Mode"
+    )
+    @Preview(
+        uiMode = Configuration.UI_MODE_NIGHT_YES,
+        showBackground = true,
+        name = "Dark Mode"
+    )
+    @Composable
+    fun preview() {
+        JetTheme {
+            MyApp()
+        }
+    }
+
+    @Preview(
+        name = "TaskRow",
+        showBackground = true
+    )
+    @Composable
+    fun previewTaskRow() {
+        TaskRow(task1 = SampleData.TASK_SAMPLE_DATA[0], task2 = SampleData.TASK_SAMPLE_DATA[1])
+    }
+
+    @Preview(
+        name = "TaskItem",
+        showBackground = true
+    )
+    @Composable
+    fun previewTaskItem() {
+        TaskItem(task = SampleData.TASK_SAMPLE_DATA[0])
     }
 }
 
+data class Task(
+    val id: Int,
+    val title: String,
+    val rate: Double
+)
+
 object SampleData {
-    // Sample conversation data
-    val conversationSample = listOf(
-        Message(
-            "Colleague",
-            "Test...Test...Test..."
-        ),
-        Message(
-            "Colleague",
-            "List of Android versions:\n" +
-                    "Android KitKat (API 19)\n" +
-                    "Android Lollipop (API 21)\n" +
-                    "Android Marshmallow (API 23)\n" +
-                    "Android Nougat (API 24)\n" +
-                    "Android Oreo (API 26)\n" +
-                    "Android Pie (API 28)\n" +
-                    "Android 10 (API 29)\n" +
-                    "Android 11 (API 30)\n" +
-                    "Android 12 (API 31)\n"
-        ),
-        Message(
-            "Colleague",
-            "I think Kotlin is my favorite programming language.\n" +
-                    "It's so much fun!"
-        ),
-        Message(
-            "Colleague",
-            "Searching for alternatives to XML layouts..."
-        ),
-        Message(
-            "Colleague",
-            "Hey, take a look at Jetpack Compose, it's great!\n" +
-                    "It's the Android's modern toolkit for building native UI." +
-                    "It simplifies and accelerates UI development on Android." +
-                    "Less code, powerful tools, and intuitive Kotlin APIs :)"
-        ),
-        Message(
-            "Colleague",
-            "It's available from API 21+ :)"
-        ),
-        Message(
-            "Colleague",
-            "Writing Kotlin for UI seems so natural, Compose where have you been all my life?"
-        ),
-        Message(
-            "Colleague",
-            "Android Studio next version's name is Arctic Fox"
-        ),
-        Message(
-            "Colleague",
-            "Android Studio Arctic Fox tooling for Compose is top notch ^_^"
-        ),
-        Message(
-            "Colleague",
-            "I didn't know you can now run the emulator directly from Android Studio"
-        ),
-        Message(
-            "Colleague",
-            "Compose Previews are great to check quickly how a composable layout looks like"
-        ),
-        Message(
-            "Colleague",
-            "Previews are also interactive after enabling the experimental setting"
-        ),
-        Message(
-            "Colleague",
-            "Have you tried writing build.gradle with KTS?"
-        ),
+    val TASK_SAMPLE_DATA: List<Task> = listOf(
+        Task(0, "title", 2.3),
+        Task(1, "title", 2.3),
+        Task(2, "title", 2.3),
+        Task(3, "title", 2.3),
+        Task(4, "title", 2.3),
+        Task(5, "title", 2.3),
+        Task(6, "title", 2.3),
+        Task(7, "title", 2.3),
+        Task(8, "title", 2.3),
+        Task(9, "title", 2.3),
+        Task(10, "title", 2.3),
+        Task(11, "title", 2.3),
+        Task(12, "title", 2.3),
+        Task(13, "title", 2.3),
+        Task(14, "title", 2.3),
     )
 }

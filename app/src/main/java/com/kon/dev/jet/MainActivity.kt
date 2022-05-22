@@ -5,19 +5,32 @@ import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.kon.dev.jet.ui.theme.JetTheme
+import com.kon.dev.jet.ui.theme.Typography
+import kotlinx.coroutines.launch
 
+@OptIn(
+    ExperimentalFoundationApi::class,
+    ExperimentalMaterial3Api::class
+)
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,124 +44,81 @@ class MainActivity : ComponentActivity() {
 
     @Composable
     fun MyApp() {
-        Column {
-            val topAppBar = CenterAlignedTopAppBar(
-                title = {
-                    Text(text = "テストアプリ")
-                },
-                navigationIcon = {
-                    IconButton(onClick = {}) {
-                        Icon(
-                            imageVector = Icons.Rounded.Menu,
-                            contentDescription = "menu"
-                        )
-                    }
-                }
-            )
+        val drawerState = rememberDrawerState(DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
 
-            topAppBar
-            TaskGrid(SampleData.TASK_SAMPLE_DATA)
-        }
+        ModalNavigationDrawer(
+            drawerContent = {
+                Text(
+                    text = "Title",
+                    modifier = Modifier.padding(24.dp),
+                    style = Typography.headlineSmall
+                )
+            },
+            drawerState = drawerState,
+            content =  {
+                Scaffold(
+                    topBar = {
+                        CenterAlignedTopAppBar(
+                            title = {
+                                Text(text = "テストアプリ")
+                            },
+                            navigationIcon = {
+                                IconButton(onClick = {
+                                    scope.launch { drawerState.open() }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Rounded.Menu,
+                                        contentDescription = "menu"
+                                    )
+                                }
+                            }
+                        )
+                    },
+                    floatingActionButton = {
+                        LargeFloatingActionButton(
+                            onClick = {}
+                        ) {
+                            Icon (
+                                imageVector = Icons.Outlined.Edit,
+                                contentDescription = "Add",
+                                modifier = Modifier.size(FloatingActionButtonDefaults.LargeIconSize)
+                            )
+                        }
+                    }
+                ) {
+                    TaskGrid(SampleData.TASK_SAMPLE_DATA)
+                }
+            }
+        )
+        
+
     }
 
     @Composable
     fun TaskGrid(tasks: List<Task>) {
-        LazyColumn {
-            var taskRow: MutableList<Task> = mutableListOf()
-
-            items(tasks.size) { index ->
-                taskRow.add(tasks[index])
-                if (taskRow.size == 2) {
-                    TaskRow(task1 = taskRow[0], task2 = taskRow[1])
-                    taskRow.clear()
-                }
-                else if (index + 1 == tasks.size) {
-                    TaskRow(task1 = tasks[index])
-
-                }
-            }
-        }
-    }
-
-    @OptIn(ExperimentalMaterial3Api::class)
-    @Composable
-    fun TaskRow(task1: Task, task2: Task? = null) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight()
-                .padding(2.dp)
+        LazyVerticalGrid(
+            cells = GridCells.Fixed(2)
         ) {
-//        TaskItem(task = task1)
-            Surface(
-                modifier = Modifier
-                    .padding(8.dp)
-                    .shadow(elevation = 4.dp, MaterialTheme.shapes.medium)
-                    .weight(1f, true),
-                onClick = {
-                    Toast.makeText(this@MainActivity, "id: ${task1.id}", Toast.LENGTH_SHORT).show()
-                }
-            ) {
-                Column(
-                    modifier = Modifier.padding(8.dp)
-                ) {
-                    Text(
-                        text = "${task1.title}: id ${task1.id}",
-                        style = MaterialTheme.typography.titleMedium
-                    )
-                    Text(
-                        text = "${task1.rate}%",
-                        style = MaterialTheme.typography.headlineSmall
-                    )
-                }
-            }
-            if (task2 != null) {
-//            TaskItem(task = task2)
-                Surface(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .shadow(elevation = 4.dp, MaterialTheme.shapes.medium)
-                        .weight(1f, true),
-                    onClick = {
-                        Toast.makeText(this@MainActivity, "id: ${task2.id}", Toast.LENGTH_SHORT).show()
-                    }
-                ) {
-                    Column(
-                        modifier = Modifier.padding(8.dp)
-                    ) {
-                        Text(
-                            text = "${task2.title}: id ${task2.id}",
-                            style = MaterialTheme.typography.titleMedium
-                        )
-                        Text(
-                            text = "${task2.rate}%",
-                            style = MaterialTheme.typography.headlineSmall
-                        )
-                    }
-                }
-            }
-            else {
-                Spacer(
-                    modifier = Modifier
-                        .padding(8.dp)
-                        .weight(1f, true)
-                )
+            items(tasks) { task: Task ->
+                TaskItem(task = task)
             }
         }
     }
 
     @Composable
     fun TaskItem(task: Task) {
-        Surface(
-            modifier = Modifier
-                .padding(8.dp)
-                .shadow(elevation = 4.dp, MaterialTheme.shapes.medium)
+        OutlinedCard(
+            modifier = Modifier.padding(8.dp),
+            onClick = {
+                Toast.makeText(this, "id: ${task.id}", Toast.LENGTH_SHORT).show()
+            }
         ) {
             Column(
                 modifier = Modifier.padding(8.dp)
             ) {
                 Text(
-                    text = task.title,
+                    text = "${task.title}: id ${task.id}",
                     style = MaterialTheme.typography.titleMedium
                 )
                 Text(
@@ -175,14 +145,14 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    @Preview(
-        name = "TaskRow",
-        showBackground = true
-    )
-    @Composable
-    fun previewTaskRow() {
-        TaskRow(task1 = SampleData.TASK_SAMPLE_DATA[0], task2 = SampleData.TASK_SAMPLE_DATA[1])
-    }
+//    @Preview(
+//        name = "TaskRow",
+//        showBackground = true
+//    )
+//    @Composable
+//    fun previewTaskRow() {
+//        TaskRow(task1 = SampleData.TASK_SAMPLE_DATA[0], task2 = SampleData.TASK_SAMPLE_DATA[1])
+//    }
 
     @Preview(
         name = "TaskItem",

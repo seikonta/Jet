@@ -12,12 +12,17 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Face
+import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.material.icons.rounded.Menu
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
@@ -47,13 +52,34 @@ class MainActivity : ComponentActivity() {
         val drawerState = rememberDrawerState(DrawerValue.Closed)
         val scope = rememberCoroutineScope()
 
+        val items = listOf(
+            Icons.Default.Favorite,
+            Icons.Default.Face,
+            Icons.Default.Email
+        )
+
+        val selectedItem = remember { mutableStateOf(items[0]) }
+
         ModalNavigationDrawer(
             drawerContent = {
                 Text(
-                    text = "Title",
-                    modifier = Modifier.padding(24.dp),
-                    style = Typography.headlineSmall
+                    text = "タイトル",
+                    style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.padding(16.dp)
                 )
+
+                items.forEach { item ->
+                    NavigationDrawerItem(
+                        icon = { Icon(item, contentDescription = null) },
+                        label = { Text(item.name) },
+                        selected = item == selectedItem.value,
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            selectedItem.value = item
+                        },
+                        modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                    )
+                }
             },
             drawerState = drawerState,
             content =  {
@@ -145,15 +171,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-//    @Preview(
-//        name = "TaskRow",
-//        showBackground = true
-//    )
-//    @Composable
-//    fun previewTaskRow() {
-//        TaskRow(task1 = SampleData.TASK_SAMPLE_DATA[0], task2 = SampleData.TASK_SAMPLE_DATA[1])
-//    }
-
     @Preview(
         name = "TaskItem",
         showBackground = true
@@ -187,5 +204,27 @@ object SampleData {
         Task(12, "title", 2.3),
         Task(13, "title", 2.3),
         Task(14, "title", 2.3),
+        Task(15, "title", 2.3),
+        Task(16, "title", 2.3),
+        Task(17, "title", 2.3),
+        Task(18, "title", 2.3),
+        Task(19, "title", 2.3),
+        Task(20, "title", 2.3),
+        Task(21, "title", 2.3),
+        Task(22, "title", 2.3),
+        Task(23, "title", 2.3),
+        Task(24, "title", 2.3),
+        Task(25, "title", 2.3),
+        Task(26, "title", 2.3),
+        Task(27, "title", 2.3),
+        Task(28, "title", 2.3),
+        Task(29, "title", 2.3),
+        Task(30, "title", 2.3),
+        Task(31, "title", 2.3),
+        Task(32, "title", 2.3),
+        Task(33, "title", 2.3),
+        Task(34, "title", 2.3),
+        Task(35, "title", 2.3),
+        Task(36, "title", 2.3),
     )
 }
